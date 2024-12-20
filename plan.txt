@@ -1,0 +1,93 @@
+# Objective:
+Deveplop an agentic workflow that will research a topic, generate content, review content, and output an content piece. 
+
+# Technology / Packages Used:
+- Python
+- Firecrawl: https://docs.firecrawl.dev/advanced-scraping-guide
+- SerpAPI: https://serpapi.com/search-api
+- SEMRush API: https://developer.semrush.com/api/v3/analytics/url-reports/#url-overview-one-database 
+- aisuite: https://github.com/andrewyng/aisuite 
+
+# Workflow:
+- step 1: analyze users prompt and research an topic
+-- user enter a prompt
+-- use gpt-4o to analyze users' prompt and propose 5 blog topic ideas
+-- users select a topic they determine and proceed to step 2
+
+- step 2: Researching the topic
+-- the app will use SERP API and search for the topic selected.
+-- get the URLs of the first 10 search results and proceed to step 3.
+
+- step 3: Analyzing URLs
+-- analyze the first 10 results with SEMRush API
+-- get a collective list of keywords that each URL commonly ranks. 
+-- Below is the structure of the keyword analyzed results:
+--- [{keyword: "example keyword", ranking_sites: 3, search_volume: 1000, positions: [{url: "url1.com", position: 5}, {url: "url2.com", position: 8}]}]
+
+- step 4: Fetch content
+-- use firecrawl to fetch the main content (into markdown) of the top 10 URLs 
+
+- step 5: Analyzing Content
+-- use a LLM model to analyze the content deeply. The LLM model is default to gpt-4o, and it's selected with aisuite
+-- the analyzed output should contain the following 3 parts: 
+--- common topics and subtopics
+--- contradicting points of view among the top 10 results
+--- for users searching {topic}, what could be information that they want to know while not covered or questions that aren't answered?  
+
+- step 6: Generate Content Plan
+-- based on the analyzed output, put together a content plan that contains the following
+--- Topic
+--- A content outline with hierarchical structure of headings and subheadings
+--- SEO Keywords: incorporate top keywords from step 3. 
+---- Top keywords refer to keywords with the highest and second highest ranking_sites number
+---- If the highest ranking_sites number is just 2 (as in, no keywords have more than 2 urls ranking), the select keywords with ranking_sites==2 and ranking_sites==1 and the top 10 search volume keywords   
+-- while putting together a content plan, ensure that:
+--- the common topics and subtopics are covered
+--- make a note for contradicting points 
+
+- step 7: Generate Content Draft
+-- use the content plan from step 6, to craft a compelling blog post on {topic}. 
+-- Here are some important notes for the write agent:
+--- Sections/Subtitles are properly named in an engaging manner.
+--- Ensure the post is structured with an engaging introduction, insightful body,and a summarizing conclusion
+--- Proofread for grammatical errors
+--- For contradicting points of views, make a note at the very end of the post draft and ask users to review this section carefully
+--- Output in a markdown format
+
+- step 8: Proofread the Draft Post:
+-- design a deparate proofreading agent to proofread the draft post for grammatical errors and alignment with the content plan
+-- Ensure it covers the content plan from plan 6
+-- Ensure it follows the SEO best practices
+-- ensure the output is in a markdown format
+-- at the end of the post, provide important notes to human reviewers around
+--- contradicting points that need human review and validation
+
+- step 9: SEO expoert:
+-- based on the article, provide 3 variants of the title, meta descriptions, and URL slugs
+
+- step 10: Summarization
+-- a manager agent summarize the steps in to a reporting document with the following information
+--- topic
+--- competitors (from step 2)
+--- keywords insights 
+--- content outline
+--- final output
+--- seo elements and keyword targets
+--- other notes
+
+
+# Agent Definition (for CrewAI): Explicitly
+- ResearchAgent: Responsible for steps 1 and 2.
+- ContentAnalyzerAgent: Responsible for step 5.
+- ContentPlannerAgent: Responsible for step 6.
+- WriterAgent: Responsible for step 7.
+- ProofreaderAgent: Responsible for step 8.
+- SEOAgent: Responsible for step 9.
+- ManagerAgent: Responsible for step 10.
+
+
+# Code Instructions
+- use the "CONTENT PLANNER" folder
+- this will be an app that can be called from the terminal 
+- the thinking process of agent will be printed outline
+- the last output from step 10 will be stored into a "output" folder
